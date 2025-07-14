@@ -27,16 +27,15 @@ class MetaQueryPipeline(MetaQuery):
 
     def _load_image(self, img: Union[str, Image.Image, torch.Tensor, np.ndarray],) -> Image.Image:
         """
-        Normalise a image into a fresh ``PIL.Image`` (RGB / RGBA / L).
+        Normalize various image inputs to a RGB ``PIL.Image``.
 
-        Accepts
-        --------
-        - str             : local / remote path
-        - PIL.Image       : any mode, auto-converted to RGB
-        - torch.Tensor    : (H, W) or (C, H, W) with 1 / 3 / 4 channels
-        - np.ndarray      : same shapes as tensor input
+        Supported inputs are:
+            - ``str``: path to an image (local or remote)
+            - ``PIL.Image``: any mode, converted to RGB
+            - ``torch.Tensor``: ``(H, W)`` or ``(C, H, W)`` with 1/3/4 channels
+            - ``np.ndarray``: same shapes as ``torch.Tensor`` input
 
-        Any other shape or dtype raises ``TypeError``.
+        Any floating values are assumed in ``[0,1]`` and scaled to ``uint8``.
         """
         if isinstance(img, Image.Image):
             return img.convert("RGB")
@@ -106,6 +105,7 @@ class MetaQueryPipeline(MetaQuery):
                 List[Union[Image.Image, str, torch.Tensor, List[Union[Image.Image, str, torch.Tensor]]]],
                 torch.Tensor,
                 List[torch.Tensor],
+                np.ndarray,
             ]
         ] = None,
         negative_prompt: Optional[str] = "",
