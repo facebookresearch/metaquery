@@ -43,26 +43,30 @@ class MetaQueryPipeline(MetaQuery):
         if isinstance(img, str):
             return Image.open(img).convert("RGB")
         if isinstance(img, np.ndarray):
-            arr = img
+            arr = np.asarray(img)
+            if np.issubdtype(arr.dtype, np.floating):
+                arr = (arr.clip(0, 1) * 255).astype(np.uint8)
+            elif arr.dtype != np.uint8:
+                arr = arr.astype(np.uint8)
             if arr.ndim == 2:
-                return Image.fromarray(arr.astype(np.uint8), mode="L").convert("RGB")
+                return Image.fromarray(arr, mode="L").convert("RGB")
             if arr.ndim == 3:
                 h, w, c = arr.shape
                 if c == 1:
                     arr = arr.squeeze(-1)
-                    return Image.fromarray(arr.astype(np.uint8), mode="L").convert("RGB")
+                    return Image.fromarray(arr, mode="L").convert("RGB")
                 if c in (3, 4):
-                    return Image.fromarray(arr.astype(np.uint8))
+                    return Image.fromarray(arr)
             raise TypeError(f"Unsupported numpy shape: {arr.shape}")
         if isinstance(img, torch.Tensor):
             t = img.detach().cpu()
             if t.dim() == 2:
                 if t.is_floating_point():
-                    t = (t.clamp(0, 1) * 255)
+                    t = t.clamp(0, 1) * 255
                 return Image.fromarray(t.to(torch.uint8).numpy(), mode="L").convert("RGB")
             if t.dim() == 3:
                 if t.is_floating_point():
-                    t = (t.clamp(0, 1) * 255)
+                    t = t.clamp(0, 1) * 255
                 t = t.to(torch.uint8)
                 c = t.shape[0]
                 if c == 1:
@@ -76,7 +80,11 @@ class MetaQueryPipeline(MetaQuery):
         raise TypeError(f"Unsupported image type: {type(img)}")
 
     def _prepare_images(self, images):
-        """Recursively convert nested image structures to lists of ``PIL.Image`` leaves."""
+        """Recursively normalise any nested image structure.
+
+        Every sequence is converted to a plain ``list`` with each leaf image
+        loaded via `_load_image`. ``None`` values are preserved.
+        """
         def convert(elem):
             if elem is None:
                 return None
