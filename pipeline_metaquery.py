@@ -80,10 +80,10 @@ class MetaQueryPipeline(MetaQuery):
         def convert(elem):
             if elem is None:
                 return None
-            if isinstance(elem, Sequence) and not isinstance(elem, (str, bytes, bytearray)):
-                return [convert(e) for e in elem]
             if isinstance(elem, (str, Image.Image, torch.Tensor, np.ndarray)):
                 return self._load_image(elem)
+            if isinstance(elem, Sequence) and not isinstance(elem, (str, bytes, bytearray)):
+                return [convert(e) for e in elem]
             raise TypeError(f"Unsupported image input type: {type(elem)}")
         return None if images is None else convert(images)
 
