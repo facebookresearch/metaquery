@@ -25,7 +25,7 @@ class MetaQueryPipeline(MetaQuery):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-    def _load_image(self, img: Union[str, Image.Image, torch.Tensor, np.ndarray],) -> Image.Image:
+    def _load_image(self, img: Union[str, Image.Image, torch.Tensor, np.ndarray]) -> Image.Image:
         """
         Normalize various image inputs to a RGB ``PIL.Image``.
 
