@@ -76,16 +76,12 @@ class MetaQueryPipeline(MetaQuery):
         raise TypeError(f"Unsupported image type: {type(img)}")
 
     def _prepare_images(self, images):
-        """
-        Walk an arbitrarily nested structure (list / tuple) and convert every leaf image to ``PIL.Image`` without altering the outer shape.
-
-        `None` is left untouched so the caller can decide how to use it.
-        """
+        """Recursively convert nested image structures to lists of ``PIL.Image`` leaves."""
         def convert(elem):
             if elem is None:
                 return None
             if isinstance(elem, Sequence) and not isinstance(elem, (str, bytes, bytearray)):
-                return elem.__class__(convert(e) for e in elem)
+                return [convert(e) for e in elem]
             if isinstance(elem, (str, Image.Image, torch.Tensor, np.ndarray)):
                 return self._load_image(elem)
             raise TypeError(f"Unsupported image input type: {type(elem)}")
