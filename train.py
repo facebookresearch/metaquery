@@ -78,6 +78,7 @@ class TrainingArguments(transformers.TrainingArguments):
     base_dir: str = "/path/to/base_dir"
     output_dir: str = "output"
     data_dir: str = ".cache"
+    logging_dir: str = "logs"
     eval_on_start: bool = True
     eval_strategy: str = "steps"
     eval_steps: int = 1000
